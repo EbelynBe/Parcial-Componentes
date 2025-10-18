@@ -25,44 +25,49 @@ import androidx.compose.ui.unit.sp
 import com.example.pit_stops.ui.theme.Pit_StopsTheme
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
+import java.util.*
 
 class RegistrarPitStop : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val isEditMode = intent.getBooleanExtra("isEditMode", false)
+        val pitStopData = intent.getSerializableExtra("pitStopData") as? PitStop
+
         setContent {
             Pit_StopsTheme {
-                PantallaRegistrarPitStop()
+                PantallaRegistrarPitStop(isEditMode, pitStopData)
             }
         }
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O) //No sirve para cels con API menor a 26, por lo que se usa en la hora, android 8.0
-@OptIn(ExperimentalMaterial3Api::class) //DropdownMenuBox, compose material 3
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaRegistrarPitStop() {
+fun PantallaRegistrarPitStop(
+    isEditMode: Boolean = false,
+    pitStopData: PitStop? = null
+) {
     val context = LocalContext.current
 
-    // 🔹 Simulación de datos (luego vendrán desde BD)
     val pilotos = listOf("Lewis Hamilton", "Max Verstappen", "Charles Leclerc", "Lando Norris")
     val escuderias = listOf("Mercedes", "Red Bull", "Ferrari", "McLaren")
     val tiposNeumaticos = listOf("Soft", "Medium", "Hard")
     val estados = listOf("OK", "Fallido")
 
-    // 🔹 Variables
-    var piloto by remember { mutableStateOf("") }
+    // Variables con datos precargados si se edita
+    var piloto by remember { mutableStateOf(pitStopData?.piloto ?: "") }
     var escuderia by remember { mutableStateOf("") }
-    var tiempoTotal by remember { mutableStateOf("") }
+    var tiempoTotal by remember { mutableStateOf(pitStopData?.tiempo?.toString() ?: "") }
     var tipoNeumatico by remember { mutableStateOf("") }
     var numNeumaticos by remember { mutableStateOf("") }
-    var estado by remember { mutableStateOf("") }
+    var estado by remember { mutableStateOf(pitStopData?.estado ?: "") }
     var motivoFallo by remember { mutableStateOf("") }
     var mecanico by remember { mutableStateOf("") }
     var fechaHora by remember { mutableStateOf(LocalDateTime.now()) }
 
-    // 🔹 Estados desplegables
     var expandPiloto by remember { mutableStateOf(false) }
     var expandEscuderia by remember { mutableStateOf(false) }
     var expandNeumatico by remember { mutableStateOf(false) }
@@ -82,7 +87,7 @@ fun PantallaRegistrarPitStop() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Registrar Pit Stop",
+                text = if (isEditMode) "Editar Pit Stop" else "Registrar Pit Stop",
                 color = Color.White,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
@@ -90,30 +95,14 @@ fun PantallaRegistrarPitStop() {
             )
 
             // 🔽 Piloto
-            DropdownField(
-                label = "Piloto",
-                value = piloto,
-                expanded = expandPiloto,
-                options = pilotos,
-                onExpandedChange = { expandPiloto = it },
-                onOptionSelected = {
-                    piloto = it
-                    expandPiloto = false
-                }
-            )
+            DropdownField("Piloto", piloto, expandPiloto, pilotos, { expandPiloto = it }) {
+                piloto = it; expandPiloto = false
+            }
 
             // 🔽 Escudería
-            DropdownField(
-                label = "Escudería",
-                value = escuderia,
-                expanded = expandEscuderia,
-                options = escuderias,
-                onExpandedChange = { expandEscuderia = it },
-                onOptionSelected = {
-                    escuderia = it
-                    expandEscuderia = false
-                }
-            )
+            DropdownField("Escudería", escuderia, expandEscuderia, escuderias, { expandEscuderia = it }) {
+                escuderia = it; expandEscuderia = false
+            }
 
             // ⏱ Tiempo total
             OutlinedTextField(
@@ -125,20 +114,12 @@ fun PantallaRegistrarPitStop() {
                 colors = fieldColors()
             )
 
-            // 🔽 Tipo de Neumático
-            DropdownField(
-                label = "Cambio de Neumáticos",
-                value = tipoNeumatico,
-                expanded = expandNeumatico,
-                options = tiposNeumaticos,
-                onExpandedChange = { expandNeumatico = it },
-                onOptionSelected = {
-                    tipoNeumatico = it
-                    expandNeumatico = false
-                }
-            )
+            // 🔽 Tipo Neumático
+            DropdownField("Tipo de Neumático", tipoNeumatico, expandNeumatico, tiposNeumaticos, { expandNeumatico = it }) {
+                tipoNeumatico = it; expandNeumatico = false
+            }
 
-            // 🔢 Número de Neumáticos
+            // 🔢 Número de neumáticos
             OutlinedTextField(
                 value = numNeumaticos,
                 onValueChange = { numNeumaticos = it },
@@ -149,17 +130,9 @@ fun PantallaRegistrarPitStop() {
             )
 
             // 🔽 Estado
-            DropdownField(
-                label = "Estado",
-                value = estado,
-                expanded = expandEstado,
-                options = estados,
-                onExpandedChange = { expandEstado = it },
-                onOptionSelected = {
-                    estado = it
-                    expandEstado = false
-                }
-            )
+            DropdownField("Estado", estado, expandEstado, estados, { expandEstado = it }) {
+                estado = it; expandEstado = false
+            }
 
             // 🧾 Motivo del fallo
             OutlinedTextField(
@@ -171,7 +144,7 @@ fun PantallaRegistrarPitStop() {
                 colors = fieldColors()
             )
 
-            // 👨‍🔧 Mecánico principal
+            // 👨‍🔧 Mecánico
             OutlinedTextField(
                 value = mecanico,
                 onValueChange = { mecanico = it },
@@ -181,7 +154,7 @@ fun PantallaRegistrarPitStop() {
                 colors = fieldColors()
             )
 
-            // 🗓 Fecha y hora (selector funcional)
+            // 🗓 Fecha y hora
             val calendar = Calendar.getInstance()
             val dateString = fechaHora.format(dateFormatter)
 
@@ -194,23 +167,18 @@ fun PantallaRegistrarPitStop() {
                     value = dateString,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Fecha y Hora del Pit Stop", color = Color.LightGray) },
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    label = { Text("Fecha y Hora", color = Color.LightGray) },
+                    modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
                     colors = fieldColors()
                 )
-
-                // 👉 Captura clic sobre toda el área
                 Box(
                     modifier = Modifier
                         .matchParentSize()
                         .clickable {
-                            // Selecciona primero la fecha
                             val datePicker = DatePickerDialog(
                                 context,
                                 { _, year, month, day ->
-                                    // Luego abre selector de hora
                                     val timePicker = TimePickerDialog(
                                         context,
                                         { _, hour, minute ->
@@ -231,7 +199,6 @@ fun PantallaRegistrarPitStop() {
                 )
             }
 
-
             Spacer(modifier = Modifier.height(16.dp))
 
             // 🔘 Botones
@@ -241,22 +208,26 @@ fun PantallaRegistrarPitStop() {
             ) {
                 Button(
                     onClick = {
-                        if (piloto.isBlank() || escuderia.isBlank() || tiempoTotal.isBlank()) {
+                        if (piloto.isBlank() || tiempoTotal.isBlank()) {
                             Toast.makeText(context, "Complete los campos obligatorios", Toast.LENGTH_SHORT).show()
                         } else {
-                            Toast.makeText(context, "Pit Stop guardado correctamente", Toast.LENGTH_SHORT).show()
+                            val msg = if (isEditMode)
+                                "Pit Stop actualizado correctamente"
+                            else
+                                "Pit Stop guardado correctamente"
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(1f).padding(end = 8.dp)
                 ) {
-                    Text("Guardar", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(if (isEditMode) "Actualizar" else "Guardar", color = Color.White, fontWeight = FontWeight.Bold)
                 }
 
                 Button(
                     onClick = {
-                        val intent = Intent(context, MainActivity::class.java)
+                        val intent = Intent(context, ListadoPits::class.java)
                         context.startActivity(intent)
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),

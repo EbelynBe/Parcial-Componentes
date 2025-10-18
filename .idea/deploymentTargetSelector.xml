@@ -17,9 +17,6 @@
       <SelectionState runConfigName="ListadoPits (4)">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="ListadoPits (5)">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
     </selectionStates>
   </component>
 </project>

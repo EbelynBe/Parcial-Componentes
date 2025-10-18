@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,15 +26,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pit_stops.ui.theme.Pit_StopsTheme
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import java.io.Serializable
 
+// 🔹 Modelo de datos
 data class PitStop(
     val numero: Int,
     val piloto: String,
     val tiempo: Double,
     val estado: String
-)
+) : Serializable
 
 class ListadoPits : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -132,13 +134,15 @@ fun PantallaListadoPitStops() {
                 )
             )
 
-            // 📋 Lista
+            // 📋 Lista de pit stops
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(listaFiltrada) { pit ->
                     PitStopCard(pit) {
                         val intent = Intent(context, RegistrarPitStop::class.java)
+                        intent.putExtra("isEditMode", true)
+                        intent.putExtra("pitStopData", pit)
                         context.startActivity(intent)
                     }
                 }
@@ -146,7 +150,6 @@ fun PantallaListadoPitStops() {
         }
     }
 }
-
 
 @Composable
 fun PitStopCard(pit: PitStop, onClick: () -> Unit) {
