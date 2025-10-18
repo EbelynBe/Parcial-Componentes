@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +24,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pit_stops.ui.theme.Pit_StopsTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 
 data class PitStop(
     val numero: Int,
@@ -75,15 +76,36 @@ fun PantallaListadoPitStops() {
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            Text(
-                text = "Listado de Pit Stops",
-                color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            // 🔙 Flecha de volver + título
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                IconButton(
+                    onClick = {
+                        val intent = Intent(context, MainActivity::class.java)
+                        context.startActivity(intent)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Volver",
+                        tint = Color.White
+                    )
+                }
 
-            // 🔍 Barra de búsqueda con estilo moderno
+                Text(
+                    text = "Listado de Pit Stops",
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+
+            // 🔍 Barra de búsqueda
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
@@ -98,20 +120,19 @@ fun PantallaListadoPitStops() {
                         tint = Color.Gray
                     )
                 },
-                shape = RoundedCornerShape(50), // 💫 más redondo tipo “pill”
+                shape = RoundedCornerShape(50),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
                     focusedBorderColor = Color.Red,
                     unfocusedBorderColor = Color.Gray,
-                    focusedLabelColor = Color.Red,
-                    unfocusedLabelColor = Color.LightGray,
                     cursorColor = Color.White,
-                    focusedContainerColor = Color(0xFF101010), // fondo oscuro
+                    focusedContainerColor = Color(0xFF101010),
                     unfocusedContainerColor = Color(0xFF101010)
                 )
             )
 
+            // 📋 Lista
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
@@ -125,6 +146,7 @@ fun PantallaListadoPitStops() {
         }
     }
 }
+
 
 @Composable
 fun PitStopCard(pit: PitStop, onClick: () -> Unit) {

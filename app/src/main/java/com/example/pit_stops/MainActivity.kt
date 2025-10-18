@@ -1,5 +1,6 @@
 package com.example.pit_stops
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,8 +29,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Inicio(onRegistrarPitStop = {},
-                onVerListado = {})
+            Inicio(onRegistrarPitStop = {
+                val intent = Intent(this, RegistrarPitStop::class.java)
+                startActivity(intent)
+            },
+                onVerListado = {
+                    val intent = Intent(this, ListadoPits::class.java)
+                    startActivity(intent)
+                })
         }
     }
 }
