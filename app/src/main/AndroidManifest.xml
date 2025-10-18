@@ -12,6 +12,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Pit_Stops">
         <activity
+            android:name=".RegistrarPitStop"
+            android:exported="true"
+            android:label="@string/title_activity_registrar_pit_stop"
+            android:theme="@style/Theme.Pit_Stops" />
+        <activity
+            android:name=".ListadoPits"
+            android:exported="true"
+            android:label="@string/title_activity_listado_pits"
+            android:theme="@style/Theme.Pit_Stops" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
