@@ -31,6 +31,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             Inicio(onRegistrarPitStop = {
                 val intent = Intent(this, RegistrarPitStop::class.java)
+                intent.putExtra("isEditMode", false)
                 startActivity(intent)
             },
                 onVerListado = {
@@ -83,9 +84,8 @@ fun Inicio(onRegistrarPitStop: () -> Unit, onVerListado: () -> Unit) {
                     .fillMaxSize()
                     .padding(top = 20.dp, bottom = 30.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top // 👈 para que todo quede desde arriba hacia abajo
+                verticalArrangement = Arrangement.Top
             ) {
-                // --- Card ---
                 Card(
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
@@ -138,7 +138,6 @@ fun Inicio(onRegistrarPitStop: () -> Unit, onVerListado: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // --- Botón 2 ---
                 ElevatedButton(
                     onClick = { onVerListado() },
                     modifier = Modifier
