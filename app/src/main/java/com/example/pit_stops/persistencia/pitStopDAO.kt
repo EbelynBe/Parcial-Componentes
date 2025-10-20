@@ -81,10 +81,18 @@ class pitStopDAO (private val dbHelper: DBHelper) {
         return rows
     }
 
-    fun eliminarPitStop(id: Int): Int {
-        val db = dbHelper.writableDatabase
-        val rows = db.delete("PitStop", "id=?", arrayOf(id.toString()))
+    fun obtenerPitStopsU(): List<Double> {
+        val db = dbHelper.readableDatabase
+        val cursor = db.rawQuery("SELECT tiempo FROM PitStop ORDER BY id DESC LIMIT 5", null)
+        val tiempos = mutableListOf<Double>()
+        if (cursor.moveToFirst()) {
+            do {
+                tiempos.add(cursor.getDouble(0))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
         db.close()
-        return rows
+        return tiempos.reversed()
     }
+
 }
