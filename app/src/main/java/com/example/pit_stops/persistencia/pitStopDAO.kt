@@ -6,7 +6,7 @@ import com.example.pit_stops.modelo.piloto
 import com.example.pit_stops.modelo.pitStop
 import com.example.pit_stops.modelo.tipoCambioNeumatico
 
-class pitStopDAO (private val dbHelper: DBHelper) {
+class pitStopDAO(private val dbHelper: DBHelper) {
 
     fun insertarPitStop(pitStop: pitStop) {
         val db = dbHelper.writableDatabase
@@ -71,7 +71,7 @@ class pitStopDAO (private val dbHelper: DBHelper) {
             put("tiempo", pitStop.tiempo)
             put("id_tipo_cambio_neumaticos", pitStop.tipoCambioNeumatico.id)
             put("neumaticosCambiados", pitStop.neumaticosCambiados)
-            put("estado", pitStop.estado)
+            put("estado", if (pitStop.estado) 1 else 0)
             put("descripcion", pitStop.descripcion)
             put("nombreMecanicoPrincipal", pitStop.nombreMecanicoPrincipal)
             put("fechaHora", pitStop.fechaHora)
@@ -79,6 +79,13 @@ class pitStopDAO (private val dbHelper: DBHelper) {
         val rows = db.update("PitStop", values, "id=?", arrayOf(pitStop.id.toString()))
         db.close()
         return rows
+    }
+
+    fun eliminarPitStop(id: Int): Boolean {
+        val db = dbHelper.writableDatabase
+        val resultado = db.delete("PitStop", "id=?", arrayOf(id.toString()))
+        db.close()
+        return resultado > 0
     }
 
     fun obtenerPitStopsU(): List<Double> {
@@ -94,5 +101,4 @@ class pitStopDAO (private val dbHelper: DBHelper) {
         db.close()
         return tiempos.reversed()
     }
-
 }
