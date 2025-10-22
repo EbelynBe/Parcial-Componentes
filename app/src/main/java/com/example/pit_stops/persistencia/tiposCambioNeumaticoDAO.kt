@@ -3,12 +3,13 @@ package com.example.pit_stops.persistencia
 import android.content.ContentValues
 import com.example.pit_stops.modelo.tipoCambioNeumatico
 
-class tiposCambioNeumaticoDAO (private val dbHelper: DBHelper) {
+class tiposCambioNeumaticoDAO(private val dbHelper: DBHelper) {
+
 
     fun insertarTipo(nombre: String) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
-            put("nombre", nombre)
+            put("tipo", nombre)
         }
         db.insert("TipoCambioNeumatico", null, values)
         db.close()
@@ -21,9 +22,9 @@ class tiposCambioNeumaticoDAO (private val dbHelper: DBHelper) {
 
         if (cursor.moveToFirst()) {
             do {
-                val id = cursor.getInt(0)
-                val nombre = cursor.getString(1)
-                lista.add(tipoCambioNeumatico(id, nombre))
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+                val tipo = cursor.getString(cursor.getColumnIndexOrThrow("tipo"))
+                lista.add(tipoCambioNeumatico(id, tipo))
             } while (cursor.moveToNext())
         }
 
