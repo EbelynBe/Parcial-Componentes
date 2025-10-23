@@ -17,11 +17,14 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pit_stops.persistencia.DBHelper
 import com.example.pit_stops.persistencia.pitStopDAO
+import com.example.pit_stops.ui.theme.Pit_StopsTheme
+import com.example.pit_stops.ui.theme.vipnagorgiallaFamily
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,19 +36,22 @@ class MainActivity : ComponentActivity() {
 
 
         setContent {
-            Inicio(
-                tiempos = tiempos,
-                onRegistrarPitStop = {
-                    val intent = Intent(this, RegistrarPitStop::class.java)
-                    intent.putExtra("isEditMode", false)
-                    startActivity(intent)
-                },
-                onVerListado = {
-                    val intent = Intent(this, ListadoPits::class.java)
-                    startActivity(intent)
-                }
-            )
+            Pit_StopsTheme {
+                Inicio(
+                    tiempos = tiempos,
+                    onRegistrarPitStop = {
+                        val intent = Intent(this, RegistrarPitStop::class.java)
+                        intent.putExtra("isEditMode", false)
+                        startActivity(intent)
+                    },
+                    onVerListado = {
+                        val intent = Intent(this, ListadoPits::class.java)
+                        startActivity(intent)
+                    }
+                )
+            }
         }
+
     }
 }
 
@@ -258,7 +264,7 @@ fun Inicio(
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Registrar Pit Stop", color = Color.White, fontSize = 18.sp)
+                    Text("Registrar Pit Stop", color = Color.White, fontFamily = vipnagorgiallaFamily, fontSize = 18.sp)
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -273,7 +279,7 @@ fun Inicio(
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Ver Listado", color = Color.White, fontSize = 18.sp)
+                    Text("Ver Listado", color = Color.White, fontFamily = vipnagorgiallaFamily, fontSize = 18.sp)
                 }
             }
         }
