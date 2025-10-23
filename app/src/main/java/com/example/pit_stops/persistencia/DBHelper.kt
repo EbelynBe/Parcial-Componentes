@@ -6,7 +6,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class DBHelper(context: Context) : SQLiteOpenHelper(context, "pitstops.db", null, 1) {
+class DBHelper(context: Context) : SQLiteOpenHelper(context, "pitstops.db", null, 2) {
     override fun onCreate(db: SQLiteDatabase?) {
         db?.execSQL("""
         CREATE TABLE Piloto (
@@ -46,12 +46,24 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "pitstops.db", null
             FOREIGN KEY (id_tipo_cambio_neumaticos) REFERENCES TipoCambioNeumatico(id)
         );
     """)
+        //Inserción de datos en tablas (Piloto, Escuderia y TipoCambioNeumatico)
         db?.execSQL("INSERT INTO Piloto(nombre) VALUES ('Lewis Hamilton')")
         db?.execSQL("INSERT INTO Piloto(nombre) VALUES ('Max Verstappen')")
+        db?.execSQL("INSERT INTO Piloto(nombre) VALUES ('Charles Leclerc')")
+        db?.execSQL("INSERT INTO Piloto(nombre) VALUES ('Lando Norris')")
+        db?.execSQL("INSERT INTO Piloto(nombre) VALUES ('Oliver Bearman')")
+        db?.execSQL("INSERT INTO Piloto(nombre) VALUES ('Fernando Alonso')")
         db?.execSQL("INSERT INTO Escuderia(escuderia) VALUES ('Mercedes')")
         db?.execSQL("INSERT INTO Escuderia(escuderia) VALUES ('Red Bull')")
-        db?.execSQL("INSERT INTO TipoCambioNeumatico(tipo) VALUES ('Rápido')")
-        db?.execSQL("INSERT INTO TipoCambioNeumatico(tipo) VALUES ('Completo')")
+        db?.execSQL("INSERT INTO Escuderia(escuderia) VALUES ('ScuderiaFerrari')")
+        db?.execSQL("INSERT INTO Escuderia(escuderia) VALUES ('McLarenF1Team')")
+        db?.execSQL("INSERT INTO Escuderia(escuderia) VALUES ('AstonMartinAramcoF1Team')")
+        db?.execSQL("INSERT INTO Escuderia(escuderia) VALUES ('WilliamsRacing')")
+        db?.execSQL("INSERT INTO TipoCambioNeumatico(tipo) VALUES ('Duro')")
+        db?.execSQL("INSERT INTO TipoCambioNeumatico(tipo) VALUES ('Medio')")
+        db?.execSQL("INSERT INTO TipoCambioNeumatico(tipo) VALUES ('Blando')")
+        db?.execSQL("INSERT INTO TipoCambioNeumatico(tipo) VALUES ('Intermedios')")
+        db?.execSQL("INSERT INTO TipoCambioNeumatico(tipo) VALUES ('Lluvia extrema')")
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
