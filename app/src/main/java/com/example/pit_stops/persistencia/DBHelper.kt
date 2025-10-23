@@ -6,8 +6,13 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
+// Clase que maneja la base de datos local de la app (SQLite)
+// Se encarga de crear, actualizar y poblar las tablas con datos iniciales
 class DBHelper(context: Context) : SQLiteOpenHelper(context, "pitstops.db", null, 2) {
+
+    // Se ejecuta la primera vez que se crea la base de datos
     override fun onCreate(db: SQLiteDatabase?) {
+        // Creación de la tabla de pilotos
         db?.execSQL("""
         CREATE TABLE Piloto (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -15,6 +20,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "pitstops.db", null
         );
     """)
 
+        // Creación de la tabla de escuderías
         db?.execSQL("""
         CREATE TABLE Escuderia (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,6 +28,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "pitstops.db", null
         );
     """)
 
+        // Creación de la tabla de tipos de cambio de neumáticos
         db?.execSQL("""
         CREATE TABLE TipoCambioNeumatico (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,6 +36,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "pitstops.db", null
         );
     """)
 
+        // Creación de la tabla de pit stops con sus relaciones
         db?.execSQL("""
         CREATE TABLE PitStop (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,19 +54,26 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "pitstops.db", null
             FOREIGN KEY (id_tipo_cambio_neumaticos) REFERENCES TipoCambioNeumatico(id)
         );
     """)
-        //Inserción de datos en tablas (Piloto, Escuderia y TipoCambioNeumatico)
+
+        // Inserción de datos iniciales para probar la app
+
+        // Pilotos
         db?.execSQL("INSERT INTO Piloto(nombre) VALUES ('Lewis Hamilton')")
         db?.execSQL("INSERT INTO Piloto(nombre) VALUES ('Max Verstappen')")
         db?.execSQL("INSERT INTO Piloto(nombre) VALUES ('Charles Leclerc')")
         db?.execSQL("INSERT INTO Piloto(nombre) VALUES ('Lando Norris')")
         db?.execSQL("INSERT INTO Piloto(nombre) VALUES ('Oliver Bearman')")
         db?.execSQL("INSERT INTO Piloto(nombre) VALUES ('Fernando Alonso')")
+
+        // Escuderías
         db?.execSQL("INSERT INTO Escuderia(escuderia) VALUES ('Mercedes')")
         db?.execSQL("INSERT INTO Escuderia(escuderia) VALUES ('Red Bull')")
         db?.execSQL("INSERT INTO Escuderia(escuderia) VALUES ('ScuderiaFerrari')")
         db?.execSQL("INSERT INTO Escuderia(escuderia) VALUES ('McLarenF1Team')")
         db?.execSQL("INSERT INTO Escuderia(escuderia) VALUES ('AstonMartinAramcoF1Team')")
         db?.execSQL("INSERT INTO Escuderia(escuderia) VALUES ('WilliamsRacing')")
+
+        // Tipos de neumáticos
         db?.execSQL("INSERT INTO TipoCambioNeumatico(tipo) VALUES ('Duro')")
         db?.execSQL("INSERT INTO TipoCambioNeumatico(tipo) VALUES ('Medio')")
         db?.execSQL("INSERT INTO TipoCambioNeumatico(tipo) VALUES ('Blando')")
@@ -66,6 +81,8 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "pitstops.db", null
         db?.execSQL("INSERT INTO TipoCambioNeumatico(tipo) VALUES ('Lluvia extrema')")
     }
 
+    // Se ejecuta cuando se cambia la versión de la base de datos
+    // Aquí se eliminan las tablas antiguas y se vuelven a crear
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         db?.execSQL("DROP TABLE IF EXISTS PitStop")
         db?.execSQL("DROP TABLE IF EXISTS Piloto")
@@ -73,6 +90,4 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "pitstops.db", null
         db?.execSQL("DROP TABLE IF EXISTS TipoCambioNeumatico")
         onCreate(db)
     }
-
-
 }

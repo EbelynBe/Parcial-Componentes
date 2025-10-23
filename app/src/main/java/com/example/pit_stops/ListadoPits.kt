@@ -29,6 +29,12 @@ import com.example.pit_stops.persistencia.DBHelper
 import com.example.pit_stops.persistencia.pitStopDAO
 import com.example.pit_stops.ui.theme.Pit_StopsTheme
 
+// ------------------------------------------------------------
+// Clase: ListadoPits
+// Descripción: Pantalla que muestra el listado de todos los Pit Stops
+// registrados en la base de datos. Permite buscar por nombre de piloto
+// y acceder a la edición de un registro al seleccionarlo.
+// ------------------------------------------------------------
 class ListadoPits : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,19 +49,18 @@ class ListadoPits : ComponentActivity() {
 @Composable
 fun PantallaListadoPitStops() {
     val context = LocalContext.current
-    val dbHelper = remember { DBHelper(context) }
-    val pitStopDAO = remember { pitStopDAO(dbHelper) }
+    val dbHelper = remember { DBHelper(context) }        // Helper para manejar la base de datos
+    val pitStopDAO = remember { pitStopDAO(dbHelper) }   // DAO para acceder a los pit stops
 
-    var query by remember { mutableStateOf("") }
-    var listaPitStops by remember { mutableStateOf(emptyList<pitStop>()) }
+    var query by remember { mutableStateOf("") }          // Texto de búsqueda
+    var listaPitStops by remember { mutableStateOf(emptyList<pitStop>()) } // Lista total de pit stops
 
-    // Cargar todos los registros
+    // Carga inicial de los registros desde la base de datos
     LaunchedEffect(key1 = true) {
         listaPitStops = pitStopDAO.obtenerTodos()
     }
 
-
-    // Filtrado local por nombre del piloto
+    // Filtrado local según el nombre del piloto
     val listaFiltrada = remember(query, listaPitStops) {
         if (query.isBlank()) listaPitStops
         else listaPitStops.filter {
@@ -63,6 +68,7 @@ fun PantallaListadoPitStops() {
         }
     }
 
+    // Estructura visual de la pantalla usando Scaffold
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -76,6 +82,7 @@ fun PantallaListadoPitStops() {
                 .padding(padding)
                 .padding(16.dp)
         ) {
+            // Encabezado con botón de volver y título
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -104,6 +111,7 @@ fun PantallaListadoPitStops() {
                 )
             }
 
+            // Campo de búsqueda por nombre del piloto
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
@@ -130,11 +138,13 @@ fun PantallaListadoPitStops() {
                 )
             )
 
+            // Lista con los pit stops (usa LazyColumn para scroll eficiente)
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(listaFiltrada) { pit ->
                     PitStopCard(pit) {
+                        // Al hacer clic en un item, se abre la pantalla de edición
                         val intent = Intent(context, RegistrarPitStop::class.java)
                         intent.putExtra("isEditMode", true)
                         intent.putExtra("pitStopData", pit)
@@ -146,6 +156,11 @@ fun PantallaListadoPitStops() {
     }
 }
 
+// ------------------------------------------------------------
+// Composable: PitStopCard
+// Descripción: Muestra los datos principales de un pit stop
+// en una tarjeta con diseño oscuro y estado visual (OK / Fallido).
+// ------------------------------------------------------------
 @Composable
 fun PitStopCard(pit: pitStop, onClick: () -> Unit) {
     val colorFondo = Color(0xFF1E1E1E)
@@ -155,7 +170,7 @@ fun PitStopCard(pit: pitStop, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .background(colorFondo, shape = MaterialTheme.shapes.medium)
-            .clickable { onClick() }
+            .clickable { onClick() }        // Permite navegar al hacer clic
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -185,6 +200,7 @@ fun PitStopCard(pit: pitStop, onClick: () -> Unit) {
             )
         }
 
+        // Indicador visual del estado del pit stop
         Text(
             text = if (pit.estado) "OK" else "Fallido",
             color = colorEstado,

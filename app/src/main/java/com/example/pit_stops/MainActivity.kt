@@ -17,7 +17,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,35 +25,48 @@ import com.example.pit_stops.persistencia.pitStopDAO
 import com.example.pit_stops.ui.theme.Pit_StopsTheme
 import com.example.pit_stops.ui.theme.vipnagorgiallaFamily
 
+// ------------------------------------------------------------
+// Clase: MainActivity
+// Descripción: Pantalla principal de la aplicación. Muestra
+// un resumen gráfico con los últimos tiempos de pit stop,
+// estadísticas básicas y botones para registrar o listar.
+// ------------------------------------------------------------
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val dbHelper = DBHelper(this)
         val pitStopDAO = pitStopDAO(dbHelper)
-        val tiempos = pitStopDAO.obtenerPitStopsU()
-
+        val tiempos = pitStopDAO.obtenerPitStopsU() // Obtiene los últimos tiempos registrados
 
         setContent {
             Pit_StopsTheme {
+                // Llama al composable principal pasando los datos y acciones
                 Inicio(
                     tiempos = tiempos,
                     onRegistrarPitStop = {
+                        // Abre la pantalla para registrar un nuevo pit stop
                         val intent = Intent(this, RegistrarPitStop::class.java)
                         intent.putExtra("isEditMode", false)
                         startActivity(intent)
                     },
                     onVerListado = {
+                        // Abre la pantalla con el listado de pit stops
                         val intent = Intent(this, ListadoPits::class.java)
                         startActivity(intent)
                     }
                 )
             }
         }
-
     }
 }
 
+// ------------------------------------------------------------
+// Composable: Inicio
+// Descripción: Interfaz principal con la gráfica de barras
+// que muestra los tiempos recientes, junto a estadísticas
+// generales y botones de navegación.
+// ------------------------------------------------------------
 @Composable
 fun Inicio(
     tiempos: List<Double>,
@@ -67,7 +79,7 @@ fun Inicio(
             .background(Color.White)
     ) {
 
-        // Encabezado con título y gráfica
+        // ---------- Sección superior: Gráfica y título ----------
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -75,8 +87,8 @@ fun Inicio(
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            Color(0xFF000000),
-                            Color(0xFF600808)
+                            Color(0xFF000000), // negro en la parte superior
+                            Color(0xFF600808)  // rojo oscuro degradado
                         )
                     )
                 ),
@@ -92,17 +104,17 @@ fun Inicio(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Gráfica justo debajo del texto
-            // Gráfica justo debajo del texto
+            // Si existen datos, se muestra la gráfica; si no, un texto informativo
             if (tiempos.isNotEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
-                        .height(250.dp) // un poco más de altura para título y etiquetas
+                        .height(250.dp)
                         .background(Color.White, RoundedCornerShape(12.dp))
                         .padding(12.dp),
                     contentAlignment = Alignment.TopCenter
                 ) {
+                    // Canvas para dibujar la gráfica de barras manualmente
                     Canvas(
                         modifier = Modifier
                             .fillMaxSize()
@@ -122,39 +134,42 @@ fun Inicio(
                         drawContext.canvas.nativeCanvas.drawText(
                             "Últimos Pit Stops",
                             size.width / 2,
-                            30f, // margen desde arriba
+                            30f,
                             textPaint
                         )
 
-                        // Eje Y
+                        // Dibuja los ejes X e Y
                         drawLine(
                             color = Color.Gray,
-                            start = Offset(x = 60f, y = 50f),
-                            end = Offset(x = 60f, y = ejeBase),
+                            start = Offset(60f, 50f),
+                            end = Offset(60f, ejeBase),
                             strokeWidth = 3f
                         )
-                        // Eje X
                         drawLine(
                             color = Color.Gray,
-                            start = Offset(x = 60f, y = ejeBase),
-                            end = Offset(x = size.width, y = ejeBase),
+                            start = Offset(60f, ejeBase),
+                            end = Offset(size.width, ejeBase),
                             strokeWidth = 3f
                         )
 
-                        // Etiqueta eje Y
+                        // Etiqueta del eje Y
                         drawContext.canvas.nativeCanvas.drawText(
                             "Tiempo (s)",
                             30f,
                             ejeBase / 2,
-                            textPaint.apply { textAlign = android.graphics.Paint.Align.CENTER; textSize = 22f }
+                            textPaint.apply {
+                                textAlign = android.graphics.Paint.Align.CENTER
+                                textSize = 22f
+                            }
                         )
 
-                        // Barras
+                        // Dibuja las barras con sus valores y etiquetas
                         tiempos.forEachIndexed { index, valor ->
-                            val barHeight = (valor / maxTiempo * (ejeBase - 70)).toFloat() // descontar margen superior
+                            val barHeight = (valor / maxTiempo * (ejeBase - 70)).toFloat()
                             val x = 90f + index * (barWidth * 2)
                             val y = ejeBase - barHeight
 
+                            // Barra roja
                             drawRect(
                                 color = Color(0xFFD32F2F),
                                 topLeft = Offset(x, y),
@@ -169,7 +184,7 @@ fun Inicio(
                                 textPaint
                             )
 
-                            // Número de pit stop abajo de la barra
+                            // Etiqueta inferior (P1, P2, P3...)
                             drawContext.canvas.nativeCanvas.drawText(
                                 "P${index + 1}",
                                 x + barWidth / 2,
@@ -186,14 +201,13 @@ fun Inicio(
                     fontSize = 16.sp
                 )
             }
-
         }
 
-        // Contenido inferior (tarjeta + botones)
+        // ---------- Sección inferior: estadísticas y botones ----------
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .offset(y = 380.dp),
+                .offset(y = 380.dp), // se superpone sobre la parte superior
             shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
             color = Color(0xFF050505),
             shadowElevation = 8.dp
@@ -206,6 +220,7 @@ fun Inicio(
                 verticalArrangement = Arrangement.Top
             ) {
 
+                // Tarjeta con estadísticas rápidas
                 Card(
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
@@ -229,13 +244,17 @@ fun Inicio(
                             fontSize = 20.sp
                         )
 
+                        // Muestra el menor tiempo (mejor pit stop)
                         Text(
-                            text = if (tiempos.isNotEmpty()) "${"%.2f".format(tiempos.minOrNull())} s" else "No hay registros",
+                            text = if (tiempos.isNotEmpty())
+                                "${"%.2f".format(tiempos.minOrNull())} s"
+                            else "No hay registros",
                             color = Color(0xFFFF5555),
                             fontSize = 26.sp,
                             fontWeight = FontWeight.Bold
                         )
 
+                        // Promedio de tiempos
                         Text(
                             text = "Promedio de tiempos: ${
                                 if (tiempos.isNotEmpty()) "%.2f".format(tiempos.average()) else "0.0"
@@ -244,6 +263,7 @@ fun Inicio(
                             fontSize = 18.sp
                         )
 
+                        // Total de registros en la gráfica
                         Text(
                             text = "Total de paradas: ${tiempos.size}",
                             color = Color.LightGray,
@@ -254,6 +274,7 @@ fun Inicio(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // Botón para registrar nuevo pit stop
                 ElevatedButton(
                     onClick = onRegistrarPitStop,
                     modifier = Modifier
@@ -264,11 +285,17 @@ fun Inicio(
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Registrar Pit Stop", color = Color.White, fontFamily = vipnagorgiallaFamily, fontSize = 18.sp)
+                    Text(
+                        "Registrar Pit Stop",
+                        color = Color.White,
+                        fontFamily = vipnagorgiallaFamily,
+                        fontSize = 18.sp
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // Botón para ver listado completo
                 ElevatedButton(
                     onClick = onVerListado,
                     modifier = Modifier
@@ -279,7 +306,12 @@ fun Inicio(
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Ver Listado", color = Color.White, fontFamily = vipnagorgiallaFamily, fontSize = 18.sp)
+                    Text(
+                        "Ver Listado",
+                        color = Color.White,
+                        fontFamily = vipnagorgiallaFamily,
+                        fontSize = 18.sp
+                    )
                 }
             }
         }
