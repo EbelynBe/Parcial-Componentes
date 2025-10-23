@@ -32,6 +32,7 @@ import com.example.pit_stops.persistencia.pilotoDAO
 import com.example.pit_stops.persistencia.pitStopDAO
 import com.example.pit_stops.persistencia.tiposCambioNeumaticoDAO
 import com.example.pit_stops.ui.theme.Pit_StopsTheme
+import com.example.pit_stops.ui.theme.vipnagorgiallaFamily
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -311,7 +312,7 @@ fun PantallaRegistrarPitStop(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(1f).padding(end = if (isEditMode) 4.dp else 8.dp)
                 ) {
-                    Text(if (isEditMode) "Actualizar" else "Guardar", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(if (isEditMode) "Editar" else "Guardar", color = Color.White, fontSize = 12.sp,fontFamily = vipnagorgiallaFamily, fontWeight = FontWeight.Light)
                 }
 
                 if (isEditMode && pitStopData != null) {
@@ -329,7 +330,7 @@ fun PantallaRegistrarPitStop(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
                     ) {
-                        Text("Eliminar", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("Eliminar", color = Color.White, fontSize = 12.sp,fontFamily = vipnagorgiallaFamily, fontWeight = FontWeight.Light)
                     }
                 }
 
@@ -341,7 +342,7 @@ fun PantallaRegistrarPitStop(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(1f).padding(start = if (isEditMode) 4.dp else 8.dp)
                 ) {
-                    Text("Cancelar", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text("Cancelar", color = Color.White, fontSize = 12.sp,fontFamily = vipnagorgiallaFamily, fontWeight = FontWeight.Light)
                 }
             }
 
