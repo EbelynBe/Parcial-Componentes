@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pit_stops.modelo.pitStop
 import com.example.pit_stops.persistencia.DBHelper
-import com.example.pit_stops.persistencia.pitStopLista
+import com.example.pit_stops.persistencia.pitStopDAO
 import com.example.pit_stops.ui.theme.Pit_StopsTheme
 
 class ListadoPits : ComponentActivity() {
@@ -44,150 +44,153 @@ class ListadoPits : ComponentActivity() {
 fun PantallaListadoPitStops() {
     val context = LocalContext.current
     val dbHelper = remember { DBHelper(context) }
-    val gestorPitStops = remember { pitStopLista(dbHelper) }
+    val pitStopDAO = remember { pitStopDAO(dbHelper) }
 
     var query by remember { mutableStateOf("") }
     var listaPitStops by remember { mutableStateOf(emptyList<pitStop>()) }
 
-    LaunchedEffect(Unit) {
-        listaPitStops = gestorPitStops.obtenerTodosLosPitStops()
+    // Cargar todos los registros
+    LaunchedEffect(key1 = true) {
+        listaPitStops = pitStopDAO.obtenerTodos()
     }
 
+
+    // Filtrado local por nombre del piloto
     val listaFiltrada = remember(query, listaPitStops) {
         if (query.isBlank()) listaPitStops
-        else gestorPitStops.buscarPorPiloto(query)
+        else listaPitStops.filter {
+            it.piloto.nombre.contains(query, ignoreCase = true)
+        }
     }
 
-        Scaffold (
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        containerColor = Color.Black
+    ) { padding ->
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black),
-            containerColor = Color.Black
-        ) { padding ->
-            Column(
+                .background(Color.Black)
+                .padding(padding)
+                .padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
-                    .padding(padding)
-                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                ) {
-                    IconButton(
-                        onClick = {
-                            val intent = Intent(context, MainActivity::class.java)
-                            context.startActivity(intent)
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = Color.White
-                        )
+                IconButton(
+                    onClick = {
+                        val intent = Intent(context, MainActivity::class.java)
+                        context.startActivity(intent)
                     }
-
-                    Text(
-                        text = "Listado de Pit Stops",
-                        color = Color.White,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Volver",
+                        tint = Color.White
                     )
                 }
 
-                OutlinedTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    placeholder = { Text("Buscar por piloto...", color = Color.Gray) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Buscar",
-                            tint = Color.Gray
-                        )
-                    },
-                    shape = RoundedCornerShape(50),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Color.Red,
-                        unfocusedBorderColor = Color.Gray,
-                        cursorColor = Color.White,
-                        focusedContainerColor = Color(0xFF101010),
-                        unfocusedContainerColor = Color(0xFF101010)
-                    )
+                Text(
+                    text = "Listado de Pit Stops",
+                    color = Color.White,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 8.dp)
                 )
+            }
 
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(listaFiltrada) { pit ->
-                        PitStopCard(pit) {
-                            val intent = Intent(context, RegistrarPitStop::class.java)
-                            intent.putExtra("isEditMode", true)
-                            intent.putExtra("pitStopData", pit)
-                            context.startActivity(intent)
-                        }
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                placeholder = { Text("Buscar por piloto...", color = Color.Gray) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Buscar",
+                        tint = Color.Gray
+                    )
+                },
+                shape = RoundedCornerShape(50),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedBorderColor = Color.Red,
+                    unfocusedBorderColor = Color.Gray,
+                    cursorColor = Color.White,
+                    focusedContainerColor = Color(0xFF101010),
+                    unfocusedContainerColor = Color(0xFF101010)
+                )
+            )
+
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(listaFiltrada) { pit ->
+                    PitStopCard(pit) {
+                        val intent = Intent(context, RegistrarPitStop::class.java)
+                        intent.putExtra("isEditMode", true)
+                        intent.putExtra("pitStopData", pit)
+                        context.startActivity(intent)
                     }
                 }
             }
         }
     }
+}
 
-    @Composable
-    fun PitStopCard(pit: pitStop, onClick: () -> Unit) {
-        val colorFondo = Color(0xFF1E1E1E)
-        val colorEstado = if (pit.estado) Color(0xFF4CAF50) else Color(0xFFE53935)
+@Composable
+fun PitStopCard(pit: pitStop, onClick: () -> Unit) {
+    val colorFondo = Color(0xFF1E1E1E)
+    val colorEstado = if (pit.estado) Color(0xFF4CAF50) else Color(0xFFE53935)
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(colorFondo, shape = MaterialTheme.shapes.medium)
-                .clickable { onClick() }
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = pit.piloto.nombre,
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "Escudería: ${pit.escuderia.escuderia}",
-                    color = Color.Gray,
-                    fontSize = 14.sp
-                )
-                Text(
-                    text = "Tiempo: ${pit.tiempo}s | Neumáticos: ${pit.neumaticosCambiados}",
-                    color = Color.LightGray,
-                    fontSize = 13.sp
-                )
-                Text(
-                    text = "Fecha: ${pit.fechaHora}",
-                    color = Color.Gray,
-                    fontSize = 12.sp
-                )
-            }
-
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(colorFondo, shape = MaterialTheme.shapes.medium)
+            .clickable { onClick() }
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = if (pit.estado) "OK" else "Fallido",
-                color = colorEstado,
+                text = pit.piloto.nombre,
+                color = Color.White,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                textAlign = TextAlign.End
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = "Escudería: ${pit.escuderia.escuderia}",
+                color = Color.Gray,
+                fontSize = 14.sp
+            )
+            Text(
+                text = "Tiempo: ${pit.tiempo}s | Neumáticos: ${pit.neumaticosCambiados}",
+                color = Color.LightGray,
+                fontSize = 13.sp
+            )
+            Text(
+                text = "Fecha: ${pit.fechaHora}",
+                color = Color.Gray,
+                fontSize = 12.sp
             )
         }
-    }
 
+        Text(
+            text = if (pit.estado) "OK" else "Fallido",
+            color = colorEstado,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            textAlign = TextAlign.End
+        )
+    }
+}

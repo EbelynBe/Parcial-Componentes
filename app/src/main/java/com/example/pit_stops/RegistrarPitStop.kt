@@ -309,9 +309,28 @@ fun PantallaRegistrarPitStop(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.weight(1f).padding(end = 8.dp)
+                    modifier = Modifier.weight(1f).padding(end = if (isEditMode) 4.dp else 8.dp)
                 ) {
                     Text(if (isEditMode) "Actualizar" else "Guardar", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+
+                if (isEditMode && pitStopData != null) {
+                    Button(
+                        onClick = {
+                            val eliminado = pitDao.eliminarPitStop(pitStopData.id)
+                            if (eliminado) {
+                                Toast.makeText(context, "Pit Stop eliminado", Toast.LENGTH_SHORT).show()
+                                context.startActivity(Intent(context, ListadoPits::class.java))
+                            } else {
+                                Toast.makeText(context, "Error al eliminar", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
+                    ) {
+                        Text("Eliminar", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
                 }
 
                 Button(
@@ -320,11 +339,12 @@ fun PantallaRegistrarPitStop(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.weight(1f).padding(start = 8.dp)
+                    modifier = Modifier.weight(1f).padding(start = if (isEditMode) 4.dp else 8.dp)
                 ) {
                     Text("Cancelar", color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
+
         }
     }
 }

@@ -16,10 +16,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.nativeCanvas
 import com.example.pit_stops.persistencia.DBHelper
 import com.example.pit_stops.persistencia.pitStopDAO
 
@@ -27,12 +27,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //val dbHelper = DBHelper(this)
-        //val pitStopDAO = pitStopDAO(dbHelper)
+        val dbHelper = DBHelper(this)
+        val pitStopDAO = pitStopDAO(dbHelper)
+        val tiempos = pitStopDAO.obtenerPitStopsU()
 
-        //val tiempos = pitStopDAO.obtenerPitStopsU()
-
-       val tiempos = listOf(3.5, 3.2, 2.8, 2.4, 2.1)//prueba
 
         setContent {
             Inicio(
@@ -63,10 +61,11 @@ fun Inicio(
             .background(Color.White)
     ) {
 
-        Box(
+        // Encabezado con título y gráfica
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(330.dp)
+                .height(420.dp)
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
@@ -75,7 +74,8 @@ fun Inicio(
                         )
                     )
                 ),
-            contentAlignment = Alignment.Center
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = "Resumen de Pit Stops",
@@ -83,13 +83,111 @@ fun Inicio(
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Gráfica justo debajo del texto
+            // Gráfica justo debajo del texto
+            if (tiempos.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .height(250.dp) // un poco más de altura para título y etiquetas
+                        .background(Color.White, RoundedCornerShape(12.dp))
+                        .padding(12.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Canvas(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp)
+                    ) {
+                        val maxTiempo = tiempos.maxOrNull() ?: 1.0
+                        val barWidth = size.width / (tiempos.size * 2)
+                        val ejeBase = size.height * 0.75f
+                        val textPaint = android.graphics.Paint().apply {
+                            color = android.graphics.Color.BLACK
+                            textSize = 28f
+                            textAlign = android.graphics.Paint.Align.CENTER
+                            typeface = android.graphics.Typeface.DEFAULT_BOLD
+                        }
+
+                        // Título de la gráfica
+                        drawContext.canvas.nativeCanvas.drawText(
+                            "Últimos Pit Stops",
+                            size.width / 2,
+                            30f, // margen desde arriba
+                            textPaint
+                        )
+
+                        // Eje Y
+                        drawLine(
+                            color = Color.Gray,
+                            start = Offset(x = 60f, y = 50f),
+                            end = Offset(x = 60f, y = ejeBase),
+                            strokeWidth = 3f
+                        )
+                        // Eje X
+                        drawLine(
+                            color = Color.Gray,
+                            start = Offset(x = 60f, y = ejeBase),
+                            end = Offset(x = size.width, y = ejeBase),
+                            strokeWidth = 3f
+                        )
+
+                        // Etiqueta eje Y
+                        drawContext.canvas.nativeCanvas.drawText(
+                            "Tiempo (s)",
+                            30f,
+                            ejeBase / 2,
+                            textPaint.apply { textAlign = android.graphics.Paint.Align.CENTER; textSize = 22f }
+                        )
+
+                        // Barras
+                        tiempos.forEachIndexed { index, valor ->
+                            val barHeight = (valor / maxTiempo * (ejeBase - 70)).toFloat() // descontar margen superior
+                            val x = 90f + index * (barWidth * 2)
+                            val y = ejeBase - barHeight
+
+                            drawRect(
+                                color = Color(0xFFD32F2F),
+                                topLeft = Offset(x, y),
+                                size = Size(barWidth, barHeight)
+                            )
+
+                            // Valor arriba de la barra
+                            drawContext.canvas.nativeCanvas.drawText(
+                                String.format("%.1f", valor),
+                                x + barWidth / 2,
+                                y - 10f,
+                                textPaint
+                            )
+
+                            // Número de pit stop abajo de la barra
+                            drawContext.canvas.nativeCanvas.drawText(
+                                "P${index + 1}",
+                                x + barWidth / 2,
+                                ejeBase + 35f,
+                                textPaint
+                            )
+                        }
+                    }
+                }
+            } else {
+                Text(
+                    text = "No hay datos de pit stops registrados",
+                    color = Color.LightGray,
+                    fontSize = 16.sp
+                )
+            }
+
         }
 
-
+        // Contenido inferior (tarjeta + botones)
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .offset(y = 300.dp),
+                .offset(y = 380.dp),
             shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
             color = Color(0xFF050505),
             shadowElevation = 8.dp
@@ -105,7 +203,7 @@ fun Inicio(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
-                        .height(150.dp),
+                        .height(170.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = Color(0xFF1A1A1A)
                     ),
@@ -120,116 +218,35 @@ fun Inicio(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Pit stop más rápido",
+                            text = "Pit stop más rápido:",
                             color = Color.LightGray,
                             fontSize = 20.sp
                         )
+
                         Text(
-                            text = "Promedio de tiempos: 12",
+                            text = if (tiempos.isNotEmpty()) "${"%.2f".format(tiempos.minOrNull())} s" else "No hay registros",
                             color = Color(0xFFFF5555),
-                            fontSize = 20.sp
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
                         )
+
                         Text(
-                            text = "Total de paradas: 3.2",
+                            text = "Promedio de tiempos: ${
+                                if (tiempos.isNotEmpty()) "%.2f".format(tiempos.average()) else "0.0"
+                            } s",
                             color = Color.LightGray,
-                            fontSize = 20.sp
+                            fontSize = 18.sp
                         )
-                    }
-                }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // grafica
-                if (tiempos.isNotEmpty()) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .height(220.dp)
-                            .background(Color.White, RoundedCornerShape(12.dp))
-                            .padding(12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Canvas(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(8.dp)
-                        ) {
-                            val maxTiempo = tiempos.maxOrNull() ?: 1.0
-                            val barWidth = size.width / (tiempos.size * 2)
-                            val ejeBase = size.height * 0.85f
-                            val textPaint = android.graphics.Paint().apply {
-                                color = android.graphics.Color.BLACK
-                                textSize = 28f
-                                textAlign = android.graphics.Paint.Align.CENTER
-                                typeface = android.graphics.Typeface.DEFAULT_BOLD
-                            }
-
-
-                            drawLine(
-                                color = Color.Gray,
-                                start = Offset(x = 60f, y = 0f),
-                                end = Offset(x = 60f, y = ejeBase),
-                                strokeWidth = 3f
-                            )
-
-                            drawLine(
-                                color = Color.Gray,
-                                start = Offset(x = 60f, y = ejeBase),
-                                end = Offset(x = size.width, y = ejeBase),
-                                strokeWidth = 3f
-                            )
-
-
-                            tiempos.forEachIndexed { index, valor ->
-                                val barHeight = (valor / maxTiempo * (ejeBase - 20)).toFloat()
-                                val x = 90f + index * (barWidth * 2)
-                                val y = ejeBase - barHeight
-
-
-                                drawRect(
-                                    color = Color(0xFFD32F2F),
-                                    topLeft = Offset(x, y),
-                                    size = Size(barWidth, barHeight)
-                                )
-
-
-                                drawContext.canvas.nativeCanvas.drawText(
-                                    String.format("%.1f", valor),
-                                    x + barWidth / 2,
-                                    y - 10f,
-                                    textPaint
-                                )
-
-
-                                drawContext.canvas.nativeCanvas.drawText(
-                                    "P${index + 1}",
-                                    x + barWidth / 2,
-                                    ejeBase + 35f,
-                                    textPaint
-                                )
-                            }
-                        }
-                    }
-                }else {
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .height(120.dp)
-                            .background(Color(0xFFEFEFEF), RoundedCornerShape(12.dp))
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
                         Text(
-                            text = "No hay datos de pit stops registrados",
-                            color = Color.Gray,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Medium
+                            text = "Total de paradas: ${tiempos.size}",
+                            color = Color.LightGray,
+                            fontSize = 18.sp
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
 
+                Spacer(modifier = Modifier.height(24.dp))
 
                 ElevatedButton(
                     onClick = onRegistrarPitStop,
@@ -245,7 +262,6 @@ fun Inicio(
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-
 
                 ElevatedButton(
                     onClick = onVerListado,
