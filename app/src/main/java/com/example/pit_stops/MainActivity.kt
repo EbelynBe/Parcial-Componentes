@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.pit_stops.modelo.pitStop
 import com.example.pit_stops.persistencia.DBHelper
 import com.example.pit_stops.persistencia.pitStopDAO
 import com.example.pit_stops.ui.theme.Pit_StopsTheme
@@ -38,12 +39,12 @@ class MainActivity : ComponentActivity() {
         val dbHelper = DBHelper(this)
         val pitStopDAO = pitStopDAO(dbHelper)
         val tiempos = pitStopDAO.obtenerPitStopsU() // Obtiene los últimos tiempos registrados
-
+        val tiemposTotal = pitStopDAO.obtenerTodos()
         setContent {
             Pit_StopsTheme {
                 // Llama al composable principal pasando los datos y acciones
                 Inicio(
-                    tiempos = tiempos,
+                    tiempos = tiempos, tiemposTotal = tiemposTotal,
                     onRegistrarPitStop = {
                         // Abre la pantalla para registrar un nuevo pit stop
                         val intent = Intent(this, RegistrarPitStop::class.java)
@@ -70,6 +71,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Inicio(
     tiempos: List<Double>,
+    tiemposTotal: List<pitStop>,
     onRegistrarPitStop: () -> Unit,
     onVerListado: () -> Unit
 ) {
@@ -256,16 +258,20 @@ fun Inicio(
 
                         // Promedio de tiempos
                         Text(
-                            text = "Promedio de tiempos: ${
-                                if (tiempos.isNotEmpty()) "%.2f".format(tiempos.average()) else "0.0"
-                            } s",
+                            text = "Promedio de tiempos:",
+                            color = Color.LightGray,
+                            fontSize = 18.sp
+                        )
+                        Text(
+                            text = "${if (tiemposTotal.isNotEmpty()) "%.2f".format(tiemposTotal.map { it.tiempo }.average()) else "0.0"
+                        } s",
                             color = Color.LightGray,
                             fontSize = 18.sp
                         )
 
                         // Total de registros en la gráfica
                         Text(
-                            text = "Total de paradas: ${tiempos.size}",
+                            text = "Total de paradas: ${tiemposTotal.size}",
                             color = Color.LightGray,
                             fontSize = 18.sp
                         )
