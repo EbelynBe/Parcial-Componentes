@@ -35,7 +35,9 @@ import com.example.pit_stops.ui.theme.Pit_StopsTheme
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Info
 class RegistrarPitStop : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,6 +72,96 @@ fun fieldColors() = OutlinedTextFieldDefaults.colors(
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun DateTimePickerField(
+    label: String,
+    value: String,
+    onDateTimeSelected: (String) -> Unit
+) {
+    val context = LocalContext.current
+    val calendar = remember { Calendar.getInstance() }
+    val formatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm") }
+
+    // Intenta parsear la fecha/hora actual o usa la actual del sistema
+    val currentDateTime = try {
+        LocalDateTime.parse(value, formatter)
+    } catch (e: Exception) {
+        LocalDateTime.now()
+    }
+
+    // Configura el calendario con la fecha/hora actual para que el diálogo empiece ahí
+    calendar.set(
+        currentDateTime.year,
+        currentDateTime.monthValue - 1, // Calendar usa 0-11 para meses
+        currentDateTime.dayOfMonth,
+        currentDateTime.hour,
+        currentDateTime.minute
+    )
+
+    // Función para mostrar el diálogo de selección de HORA
+    val showTimePicker = { year: Int, month: Int, day: Int ->
+        TimePickerDialog(
+            context,
+            { _, hour: Int, minute: Int ->
+                // Actualiza el calendario con la hora seleccionada
+                calendar.set(Calendar.YEAR, year)
+                calendar.set(Calendar.MONTH, month)
+                calendar.set(Calendar.DAY_OF_MONTH, day)
+                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                calendar.set(Calendar.MINUTE, minute)
+
+                // Formatea y llama al callback
+                val selectedDateTime = LocalDateTime.of(year, month + 1, day, hour, minute)
+                onDateTimeSelected(selectedDateTime.format(formatter))
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            true // Formato 24 horas
+        ).show()
+    }
+
+    // Función para mostrar el diálogo de selección de FECHA
+    val showDatePicker = {
+        DatePickerDialog(
+            context,
+            { _, year: Int, month: Int, day: Int ->
+                // Llama al selector de hora después de seleccionar la fecha
+                showTimePicker(year, month, day)
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    OutlinedTextField(
+        value = value,
+        onValueChange = {}, // No se permite la edición directa
+        readOnly = true,
+        label = { Text(label, color = Color.LightGray) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .clickable { showDatePicker() }, // Abre el diálogo al hacer click
+        shape = RoundedCornerShape(10.dp),
+        colors = fieldColors(),
+        trailingIcon = {
+            Icon(
+                // CORRECCIÓN: Usar Icons.Default.DateRange/Info
+                imageVector = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    Icons.Default.DateRange
+                } else {
+                    Icons.Default.Info
+                },
+                contentDescription = "Seleccionar Fecha y Hora",
+                tint = Color.Red,
+                modifier = Modifier.clickable { showDatePicker() }
+            )
+        }
+    )
+}
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun PantallaRegistrarPitStop(
     isEditMode: Boolean = false,
     pitStopData: pitStop? = null
@@ -91,7 +183,7 @@ fun PantallaRegistrarPitStop(
     var motivoFallo by remember { mutableStateOf(pitStopData?.descripcion ?: "") }
     var mecanico by remember { mutableStateOf(pitStopData?.nombreMecanicoPrincipal ?: "") }
 
-    var fechaHora by remember { mutableStateOf(pitStopData?.fechaHora ?: java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))) }
+    var fechaHora by remember { mutableStateOf(pitStopData?.fechaHora ?: LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))) }
 
     var expandPiloto by remember { mutableStateOf(false) }
     var expandEscuderia by remember { mutableStateOf(false) }
@@ -102,8 +194,6 @@ fun PantallaRegistrarPitStop(
     var listaEscuderias by remember { mutableStateOf(listOf<escuderia>()) }
     var listaTipos by remember { mutableStateOf(listOf<tipoCambioNeumatico>()) }
 
-    val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
-    val calendar = remember { Calendar.getInstance() }
 
     LaunchedEffect(Unit) {
         listaPilotos = pilotoDao.obtenerPilotos()
@@ -190,7 +280,6 @@ fun PantallaRegistrarPitStop(
                 colors = fieldColors()
             )
 
-            val estados = listOf("OK", "Fallido")
             DropdownField(
                 label = "Estado",
                 value = estadoTexto,
@@ -224,16 +313,13 @@ fun PantallaRegistrarPitStop(
                 colors = fieldColors()
             )
 
-            OutlinedTextField(
+            // MODIFICACIÓN: Reemplazo del OutlinedTextField estático por el nuevo componente
+            DateTimePickerField(
+                label = "Fecha y Hora",
                 value = fechaHora,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Fecha y Hora", color = Color.LightGray) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 6.dp),
-                shape = RoundedCornerShape(10.dp),
-                colors = fieldColors()
+                onDateTimeSelected = { selectedDateTime ->
+                    fechaHora = selectedDateTime
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -395,5 +481,3 @@ fun DropdownField(
         }
     }
 }
-
-
