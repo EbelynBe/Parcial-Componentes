@@ -16,32 +16,21 @@ class tiposCambioNeumaticoDAOTest {
         val dbHelper = DBHelper(context)
         val dao = tiposCambioNeumaticoDAO(dbHelper)
 
-
-        val antes = dao.obtenerTipos()
-        println("Tipos antes: $antes")
-
-
+        val antes = dao.obtenerTipos() // Obtener tipos antes
         val nombreTemp = "Test Tipo"
-        dao.insertarTipo(nombreTemp)
+        dao.insertarTipo(nombreTemp) // Insertar tipo
 
-
-        val despues = dao.obtenerTipos()
-        println("Tipos después de insertar: $despues")
-
-
+        val despues = dao.obtenerTipos() // Obtener tipos después
         val existe = despues.any { it.toString().contains(nombreTemp) }
         assertTrue(existe)
 
-
         val ultimo = despues.last()
         val db = dbHelper.writableDatabase
-        val filasEliminadas = db.delete("TipoCambioNeumatico", "id=?", arrayOf(ultimo.id.toString()))
+        val filasEliminadas = db.delete("TipoCambioNeumatico", "id=?", arrayOf(ultimo.id.toString())) // Eliminar último tipo
         db.close()
-        println("Filas eliminadas (rollback manual): $filasEliminadas")
 
-
-        val final = dao.obtenerTipos()
-        println("Tipos finales: $final")
-        assertEquals(antes.size, final.size)
+        val final = dao.obtenerTipos() // Obtener tipos finales
+        assertEquals(antes.size, final.size) // Comparar tamaños
     }
 }
+

@@ -29,7 +29,8 @@ class MainActivity : ComponentActivity() {
 
         val dbHelper = DBHelper(this)
         val pitStopDAO = pitStopDAO(dbHelper)
-        val tiempos = pitStopDAO.obtenerPitStopsU() // últimos 5 tiempos
+        val tiempos = pitStopDAO.obtenerPitStopsU()
+
 
         setContent {
             Inicio(
